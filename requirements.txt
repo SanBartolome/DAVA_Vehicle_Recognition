@@ -4,4 +4,4 @@ flask_bootstrap
 flask_nav
 requests
 git+https://github.com/rmerzouki/pytube
-PIL
+Pillow
