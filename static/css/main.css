@@ -1,0 +1,30 @@
+.card-container {
+  margin: auto;
+  text-align: center;
+  width: 50vw;
+}
+
+.navbar-collapse.collapse {
+  flex: 1;
+}
+
+.nav.navbar-nav {
+  display: flex !important;
+  flex-direction: row;
+}
+
+.navbar-nav,
+.navbar-nav > li {
+  float: none;
+}
+
+.alert {
+  left: 42vw;
+  position: absolute;
+  top: 20px;
+}
+
+.parent-width {
+  max-width: 600px;
+  width: 100%;
+}

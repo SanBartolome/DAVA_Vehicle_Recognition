@@ -1,0 +1,28 @@
+{% extends "index.html" %}
+
+<!------------------------------------------------------------------------------------------>
+<!-------------------------------      Content start      ---------------------------------->
+<!------------------------------------------------------------------------------------------>
+{% block content %}
+<div class="card-container">
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title">Resultado del análisis de imagen</h5>
+    </div>
+    <div class="card-body">
+      <img
+        class="parent-width"
+        src="{{url_for('display_image', filename = filename)}}"
+      />
+      <a href="/"
+        ><button class="btn btn-primary my-4 w-50" type="button">
+          Regresar
+        </button></a
+      >
+    </div>
+  </div>
+</div>
+{% endblock %}
+<!------------------------------------------------------------------------------------------>
+<!------------------------------        Content end        --------------------------------->
+<!------------------------------------------------------------------------------------------>

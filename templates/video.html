@@ -1,0 +1,68 @@
+{% extends "index.html" %}
+
+<!------------------------------------------------------------------------------------------>
+<!-------------------------------      Content start      ---------------------------------->
+<!------------------------------------------------------------------------------------------>
+{% block content %} {% for message in get_flashed_messages() %}
+<div class="alert alert-danger alert-dismissible" role="alert">
+  <span type="button" class="close" data-dismiss="alert" aria-label="Close"
+    ><span aria-hidden="true">&times;</span></span
+  >
+  <span>{{message}}</span>
+</div>
+{% endfor %}
+<div class="card-container">
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title">Análisis de vídeo</h5>
+      <ul class="nav nav-tabs card-header-tabs" data-tabs="tabs">
+        <li class="nav-item active">
+          <a
+            class="nav-link"
+            aria-expanded="true"
+            data-toggle="tab"
+            href="#videourl"
+            >URL</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#videofile">Archivo</a>
+        </li>
+      </ul>
+    </div>
+    <form
+      class="card-body tab-content"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <div class="tab-pane active" id="videourl">
+        <p class="card-text">
+          Ingrese URL de Youtube (ej:
+          https://www.youtube.com/watch?v=zdgYw-3tzfI)
+        </p>
+        <input
+          type="url"
+          id="url"
+          name="url"
+          class="form-control"
+          autocomplete="off"
+        />
+      </div>
+      <div class="tab-pane" id="videofile">
+        <p class="card-text">Suba un archivo (mp4).</p>
+        <input
+          type="file"
+          id="file"
+          name="file"
+          class="form-control"
+          autocomplete="off"
+        />
+      </div>
+      <button class="btn btn-primary mt-4 w-50" type="submit">Predecir</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+<!------------------------------------------------------------------------------------------>
+<!------------------------------        Content end        --------------------------------->
+<!------------------------------------------------------------------------------------------>
