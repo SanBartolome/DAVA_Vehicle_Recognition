@@ -8,7 +8,7 @@ requests==2.23.0
 tqdm==4.41.0
 
 # Opencv --------------------------------------
-opencv-python-headless
+# opencv-python-headless
 
 # Torch ---------------------------------------
 -f https://download.pytorch.org/whl/torch_stable.html
