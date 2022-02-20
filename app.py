@@ -16,6 +16,7 @@ from flask.helpers import send_file
 from dominate.tags import img
 from pytube import YouTube
 from PIL import Image
+from detect import run
 
 ###############################################
 #          Define flask app                   #
@@ -40,7 +41,9 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 #          Define variables                   #
 ###############################################
 
-folder = os.path.join('static', 'uploads')
+absolute_static_path = os.path.join(app.root_path, 'static')
+absolute_sources_path = os.path.join(os.path.join(absolute_static_path, 'uploads'), 'sources')
+absolute_detect_path = os.path.join(os.path.join(absolute_static_path, 'uploads'), 'detect')
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4'}
 
@@ -65,21 +68,31 @@ def fetch(url):
     else:
         return yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
 
-def remove_files():
-    os.makedirs(folder, exist_ok=True)
-    files = glob.glob(os.path.join(folder,'*'))
+def remove_sources_files():
+    os.makedirs(absolute_sources_path, exist_ok=True)
+    files = glob.glob(os.path.join(absolute_sources_path,'*'))
     for f in files:
 	    os.remove(f)
+
+def remove_detect_files():
+    os.makedirs(absolute_detect_path, exist_ok=True)
+    files = glob.glob(os.path.join(absolute_detect_path,'*'))
+    for f in files:
+	    os.remove(f)
+
+def remove_upload_files():
+    remove_sources_files()
+    remove_detect_files()
 
 def convert_rgb_to_jpg(filename, isUrl):
     if isUrl:
         response = requests.get(filename)
         im = Image.open(io.BytesIO(response.content))
     else:
-        im = Image.open(os.path.join(folder, filename))
+        im = Image.open(os.path.join(absolute_sources_path, filename))
     rgb_im = im.convert('RGB')
-    remove_files()
-    rgb_im.save(os.path.join(folder, 'download.jpg'))
+    remove_upload_files()
+    rgb_im.save(os.path.join(absolute_sources_path, 'download.jpg'))
 
 def save_image(file, isUrl):
     if isUrl:
@@ -89,15 +102,15 @@ def save_image(file, isUrl):
         else:
             response = requests.get(file)
             im = Image.open(io.BytesIO(response.content))
-            remove_files()
-            im.save(folder, 'download.jpg')
+            remove_upload_files()
+            im.save(os.path.join(absolute_sources_path, 'download.jpg'))
     else:
         file_extension = file.filename.rsplit('.')[-1].lower()
         if file_extension == 'png':
             convert_rgb_to_jpg(filename=file.filename, isUrl=isUrl)
         else:
-            remove_files()
-            file.save(os.path.join(folder, 'download.jpg'))
+            remove_upload_files()
+            file.save(os.path.join(absolute_sources_path, 'download.jpg'))
 
 def allowed_image(filename):
     return '.' in filename and \
@@ -115,14 +128,15 @@ def get_video():
     if request.method == 'POST':
         url_dw = request.form['url']
         if url_dw:
-            y='https://www.youtube.com/watch'
-            if y in url_dw:
+            y='https://youtu.be/'
+            z='https://www.youtube.com/watch'
+            if y in url_dw or z in url_dw:
                 yt_file=fetch(url_dw)
                 if yt_file==-1:
                     flash('No se puede acceder al video. Por favor, intente otro.')
                     return redirect(request.url)
-                remove_files()
-                yt_file.download(folder, 'download.mp4')
+                remove_upload_files()
+                yt_file.download(absolute_sources_path, 'download.mp4')
                 return redirect(url_for('returnSuccess'))
             else:
                 flash('El URL no es válido.')
@@ -130,8 +144,8 @@ def get_video():
         file = request.files['file']
         if file:
             if allowed_video(file.filename):
-                remove_files()
-                file.save(os.path.join(folder, 'download.mp4'))
+                remove_upload_files()
+                file.save(os.path.join(absolute_sources_path, 'download.mp4'))
                 return redirect(url_for('returnSuccess'))
             else:
                 flash('Formato incorrecto. Subir un video con extensión mp4')
@@ -167,11 +181,15 @@ def get_image():
 
 @app.route('/success', methods=["GET"])
 def returnSuccess():
-    return(render_template('success.html', filename="download.mp4"))
+    relative_path = os.path.join(absolute_static_path, 'uploads')
+    run(weights = os.path.join(absolute_static_path, 'model/last.pt'), source = os.path.join(absolute_sources_path, 'download.mp4'), project = relative_path, name = 'detect', exist_ok = True)
+    return(render_template('success.html', filename='download_conv.mp4'))
 
 @app.route('/success-other', methods=["GET"])
 def returnSuccessOther():
-    return(render_template('success_other.html', filename="download.jpg"))
+    relative_path = os.path.join(absolute_static_path, 'uploads')
+    run(weights = os.path.join(absolute_static_path, 'model/last.pt'), source = os.path.join(absolute_sources_path, 'download.jpg'), project = relative_path, name = 'detect', exist_ok = True)
+    return(render_template('success_other.html', filename='download.jpg'))
 
 ###############################################
 #          Source routes                      #
@@ -179,7 +197,7 @@ def returnSuccessOther():
 
 @app.route('/display/<filename>')
 def display_video(filename):
-    path_to_file = os.path.join(folder, filename)
+    path_to_file = os.path.join(absolute_detect_path, filename)
     return send_file(
          path_to_file, 
          mimetype="video/mp4", 
@@ -188,7 +206,7 @@ def display_video(filename):
 
 @app.route('/show/<filename>')
 def display_image(filename):
-    path_to_file = os.path.join(folder, filename)
+    path_to_file = os.path.join(absolute_detect_path, filename)
     return send_file(
          path_to_file, 
          mimetype="image/jpeg", 
