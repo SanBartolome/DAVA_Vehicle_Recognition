@@ -183,7 +183,7 @@ def get_image():
 def returnSuccess():
     relative_path = os.path.join(absolute_static_path, 'uploads')
     run(weights = os.path.join(absolute_static_path, 'model/last.pt'), source = os.path.join(absolute_sources_path, 'download.mp4'), project = relative_path, name = 'detect', exist_ok = True)
-    return(render_template('success.html', filename='download_conv.mp4'))
+    return(render_template('success.html', filename='download.mp4'))
 
 @app.route('/success-other', methods=["GET"])
 def returnSuccessOther():
